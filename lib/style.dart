@@ -45,7 +45,8 @@ final style = ThemeData(
 
   textTheme: const TextTheme(
     titleMedium: TextStyle(
-      fontSize: 24.0
+      fontSize: 24.0,
+      color: Color(0xff617A55)
     )
   )
 

@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:practica_final_flutter/db.dart';
 import 'package:practica_final_flutter/login.dart';
 import 'package:practica_final_flutter/models/place.dart';
+import 'package:practica_final_flutter/place_view.dart';
 import 'package:practica_final_flutter/register.dart';
 import 'package:practica_final_flutter/style.dart';
 import 'package:geolocator/geolocator.dart';
@@ -27,7 +28,7 @@ class MyApp extends StatelessWidget {
       '/login' : (context) => const Login(),
       '/register' : (context) =>  const Register()
     },
-
+    
     theme: style,
     debugShowCheckedModeBanner: false,
   );
@@ -72,7 +73,7 @@ class _InicioState extends State<Inicio> {
       actions: [IconButton(onPressed: () {
         session.destroy();
         Navigator.pushReplacementNamed(context, '/login');
-      }, icon: Icon(Icons.exit_to_app, color: Color(0xFF7EAA92),))],
+      }, icon: const Icon(Icons.exit_to_app, color: Colors.white,))],
     ),
 
     body: GoogleMap(
@@ -80,9 +81,7 @@ class _InicioState extends State<Inicio> {
         
         confirmModal(context).then((value) {
           if (value) {
-            print("Funciona");
             modalAddingFav(posicion, context, getNewMarker);
-
           }
         });
       },
@@ -93,10 +92,26 @@ class _InicioState extends State<Inicio> {
       padding: const EdgeInsets.all(5.0),
     ),
     floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-    floatingActionButton: const FloatingActionButton(
-      onPressed: null,
+    floatingActionButton: FloatingActionButton(
+      onPressed: () {
+        showDialog(context: context, builder: (context) => Dialog(
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.elliptical(10, 10)),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // DropdownButton(items: items, onChanged: onChanged)
+              ],
+            ),
+          ),
+
+        ));
+      },
       tooltip: "Añadir lugar",
-      child: Icon(Icons.camera),
+      child: const Icon(Icons.camera),
     ),
     
     bottomNavigationBar:ElevatedButton(
@@ -160,7 +175,8 @@ class _InicioState extends State<Inicio> {
         position: LatLng(place.latitud, place.longitud),
         infoWindow: InfoWindow(
           title: place.name,
-          snippet: place.descripcion
+          snippet: place.descripcion,
+          onTap: () => showDialog(context: context, builder: (context) => PlaceView(actualPlace: place, deleter: deleteMarker,)),
         )
       )
     ));
@@ -173,7 +189,9 @@ class _InicioState extends State<Inicio> {
         position: LatLng(nuevoLugar.latitud, nuevoLugar.longitud),
         infoWindow: InfoWindow(
           title: nuevoLugar.name,
-          snippet: nuevoLugar.descripcion
+          snippet: nuevoLugar.descripcion,
+          onTap: () =>
+            showDialog(context: context, builder: (context) => PlaceView(actualPlace: nuevoLugar, deleter: deleteMarker,)),
         )
       )
     );
@@ -237,7 +255,9 @@ Future<bool> confirmModal(BuildContext context) async {
                   }, child: const Text("Si, acepto")),
                   ElevatedButton(onPressed: () {
                     Navigator.pop(context);
-                  }, child: const Text("No, cancelar"))
+                  }, 
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  child: const Text("No, cancelar"))
     
                 ],
               ),
@@ -257,10 +277,10 @@ void modalAddingFav(LatLng posicion, BuildContext context, void Function(Place) 
 }
 
 class FormAddingFav extends StatefulWidget {
-  FormAddingFav({super.key, required this.posicion, required this.cargarMarcadores});
+  const FormAddingFav({super.key, required this.posicion, required this.cargarMarcadores});
 
   final LatLng posicion;
-  void Function(Place) cargarMarcadores;
+  final void Function(Place) cargarMarcadores;
 
   @override
   State<FormAddingFav> createState() => _FormAddingFavState();
@@ -417,26 +437,33 @@ class _ListaFavoritosState extends State<ListaFavoritos> {
       :
         ListView.separated(
           itemBuilder: ((context, index) => GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () => showDialog(context: context, builder: (context) => PlaceView(actualPlace: favPlaces[index], deleter: widget.deleter)),
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(favPlaces[index].name, style: Theme.of(context).textTheme.titleMedium!.copyWith(color: Color(0xFF7EAA92)),),
+                  Text(favPlaces[index].name, style: Theme.of(context).textTheme.titleMedium!.copyWith(color: const Color(0xFF7EAA92)),),
                   IconButton(onPressed: () {
-                      AppDatabase().deleteFavPlace(favPlaces[index].ID!).then((value) => {
-                        if (value) {
-                          generateNotification(context, "Eliminado correctamente", Color(0xFF7EAA92)),
-                          widget.deleter(favPlaces[index].ID!),
-                          favPlaces.removeWhere((place) => place.ID == favPlaces[index].ID),
-                          setState(() {})
-                        }else {
-                          generateNotification(context, "Ha ocurrido un error", Colors.red)
-                        }
-                      });
+                      showConfirmModal(context, "¿Seguro que quiere eliminarlo?")
+                        .then((value) {
+                          if (value) {
+                            AppDatabase().deleteFavPlace(favPlaces[index].ID!).then((value) => {
+                              if (value) {
+                                generateNotification(context, "Eliminado correctamente", const Color(0xFF7EAA92)),
+                                widget.deleter(favPlaces[index].ID!),
+                                favPlaces.removeWhere((place) => place.ID == favPlaces[index].ID),
+                                setState(() {})
+                              }else {
+                                generateNotification(context, "Ha ocurrido un error", Colors.red)
+                              }
+                            });
+                          }
+                        });
                     }, 
-                    icon: Icon(Icons.delete, color: Color(0xFF617A55),)
+                    icon: const Icon(Icons.delete, color: Color(0xFF617A55),)
                   )
                 ],
               ),
@@ -465,6 +492,42 @@ generateNotification(BuildContext context, String message, Color color) =>
       content: Text(message),
       backgroundColor: color,
     )
-  );
+);
 
+Future<bool> showConfirmModal(BuildContext context, String title) async {
+  bool response = false;
 
+  await showDialog(context: context, builder: (context) => Dialog(
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(15.0)
+    ),
+    child: Container(
+      constraints: const BoxConstraints(maxHeight: 200),
+      child: Padding(
+        padding: const EdgeInsets.all(15.0),
+        child: Wrap(
+          direction: Axis.horizontal,
+          alignment: WrapAlignment.spaceAround,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            SizedBox( 
+              width: MediaQuery.of(context).size.width,
+              child: Text(title, style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center,)
+            ),
+            ElevatedButton(onPressed: () {
+              response = true;
+              Navigator.pop(context);
+            }, child: const Text("Sí, estoy seguro")),
+      
+            ElevatedButton(onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text("No, cancelar"),
+            )
+          ],
+        ),
+      ),
+    ),
+  ));
+
+  return Future.value(response);
+}

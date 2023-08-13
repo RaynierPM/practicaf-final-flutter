@@ -1,3 +1,4 @@
+import 'package:practica_final_flutter/models/photo.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 import 'package:practica_final_flutter/models/user.dart';
@@ -121,7 +122,7 @@ class AppDatabase {
     List<Place> places = [];
     final db = await _instance.db;
 
-    final result = await db!.query(placesTable, where: 'userID = ?', whereArgs: [id]);
+    final result = await db!.query(placesTable, where: '$placeUserID = ?', whereArgs: [id]);
 
     result.forEach((place) => places.add(Place.fromMap(place)));
 
@@ -147,42 +148,23 @@ class AppDatabase {
   Future<bool> deleteFavPlace(int id) async {
     final db = await _instance.db;
     try {
-      await db!.delete(placesTable, where: 'ID = ?', whereArgs: [id]);
-      return true;
+      final response = await db!.delete(placesTable, where: 'ID = ?', whereArgs: [id]);
+      await db.delete(photosTable, where: '$photoEntryID = ?', whereArgs: [id]);
+      return response == 1;
     }catch (e) {
       return false;
     } 
   }
-  // Future<void> insertLog(Log entrada) async {
-  //   final db = await _instance.db;
-
-  //   db!.insert(tableName, entrada.toMap());
-  // }
-
-  // Future<List<Log>> getAllEntries() async {
-  //   List<Log> datos = [];
-  //   final db = await _instance.db;
-
-  //   List<Map> entradas = await db!.query(tableName);
-
-  //   for (Map entrada in entradas) {
-  //     datos.add(Log.fromMap(entrada));
-  //   }
-
-  //   return datos;
-  // }
-
-  // ignore: non_constant_identifier_names
-  Future<void> deleteLog(int? ID) async {
-    if (ID != null) {
+  
+  Future<int?> addPlacePhoto(Photo foto) async {
+    try {
       final db = await _instance.db;
-      db!.delete(tableName, where: 'ID = ?', whereArgs: [ID]);
-    }else {
-      throw Exception("Error inesperado: (ID = NULL)");
+      
+      return await db!.insert(photosTable, foto.toMap());
+    }catch (error) {
+      print(error);
+      return null;
     }
-    
-
   }
-
 
 }

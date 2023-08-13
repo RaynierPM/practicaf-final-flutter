@@ -1,7 +1,7 @@
 class Photo {
-  const Photo({required this.ID, required this.path, required this.placeID});
+  const Photo({this.ID, required this.path, required this.placeID});
 
-  final int ID;
+  final int? ID;
   final String path;
   final int placeID;
 
