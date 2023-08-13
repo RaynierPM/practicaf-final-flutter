@@ -27,7 +27,7 @@ final style = ThemeData(
   ),
 
   scaffoldBackgroundColor: const Color(0xffFFF8D6),
-  appBarTheme: AppBarTheme(
+  appBarTheme: const AppBarTheme(
     
   ),
 
@@ -38,6 +38,12 @@ final style = ThemeData(
     )
   ),
 
+  iconButtonTheme: IconButtonThemeData(
+    style: IconButton.styleFrom(
+      foregroundColor: const Color(0xff617A55)
+    )
+  )
+  ,
   inputDecorationTheme: const InputDecorationTheme(
     hintStyle: TextStyle(fontSize: 20.0), 
     labelStyle: TextStyle(fontSize: 20.0),

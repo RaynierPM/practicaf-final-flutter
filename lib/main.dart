@@ -28,7 +28,8 @@ class MyApp extends StatelessWidget {
       '/login' : (context) => const Login(),
       '/register' : (context) =>  const Register()
     },
-    
+    color: const Color(0xff617A55),
+    title: "ExplorePix",
     theme: style,
     debugShowCheckedModeBanner: false,
   );
@@ -91,28 +92,6 @@ class _InicioState extends State<Inicio> {
       markers: marcadores,
       padding: const EdgeInsets.all(5.0),
     ),
-    floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-    floatingActionButton: FloatingActionButton(
-      onPressed: () {
-        showDialog(context: context, builder: (context) => Dialog(
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.elliptical(10, 10)),
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // DropdownButton(items: items, onChanged: onChanged)
-              ],
-            ),
-          ),
-
-        ));
-      },
-      tooltip: "Añadir lugar",
-      child: const Icon(Icons.camera),
-    ),
     
     bottomNavigationBar:ElevatedButton(
       style: ElevatedButton.styleFrom(
@@ -147,9 +126,9 @@ class _InicioState extends State<Inicio> {
       
       marcadores.add(
         Marker(
-          markerId: MarkerId('Posicion actual'), 
+          markerId: const MarkerId('Posicion actual'), 
           position: LatLng(posicion.latitude, posicion.longitude),
-          infoWindow: InfoWindow(title: "Posicion actual!"),
+          infoWindow: const InfoWindow(title: "Posicion actual!"),
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueMagenta)
         )
       );

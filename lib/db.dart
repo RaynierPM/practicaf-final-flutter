@@ -160,10 +160,33 @@ class AppDatabase {
     try {
       final db = await _instance.db;
       
-      return await db!.insert(photosTable, foto.toMap());
+      final response = await db!.insert(photosTable, foto.toMap());
+
+      return response == 0? null: response;
     }catch (error) {
       print(error);
       return null;
+    }
+  }
+
+  Future<List<Photo>> getAllPhotos(int placeID) async {
+    final List<Photo> fotos = [];
+    try {
+      final db = await _instance.db;
+      if (db!.isOpen) {
+        final result = await db.query(photosTable, where: "$photoEntryID = ?", whereArgs: [placeID]);
+
+        result.forEach((foto) {
+          fotos.add(Photo.fromMap(foto));
+        });
+
+        return fotos;
+      }else {
+        return Future.error("Error inesperado");
+      }
+    }catch (e) {
+      print(e);
+      return Future.error("Error inesperado");
     }
   }
 

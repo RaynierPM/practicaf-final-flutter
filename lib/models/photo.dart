@@ -1,18 +1,18 @@
 class Photo {
-  const Photo({this.ID, required this.path, required this.placeID});
+  const Photo({this.ID, required this.path, required this.entryID});
 
   final int? ID;
   final String path;
-  final int placeID;
+  final int entryID;
 
   factory Photo.fromMap(Map data) => Photo(
     ID: data["ID"], 
     path: data["path"], 
-    placeID: data["entryID"]
+    entryID: data["entryID"]
   );
 
   toMap() => {
     "ID": ID, 
     "path": path, 
-    "placeID": placeID};
+    "entryID": entryID};
 }
